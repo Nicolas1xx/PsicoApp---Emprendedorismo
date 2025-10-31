@@ -11,7 +11,7 @@ from flask import Flask, json, render_template, request, redirect, url_for, sess
 # 🚨 NOVA IMPORTAÇÃO: werkzeug.utils para nomes de arquivo seguros
 from werkzeug.utils import secure_filename 
 import firebase_admin
-from firebase_admin import credentials, firestore, auth
+from firebase_admin import credentials, firestore, auth, initialize_app
 from datetime import datetime, timedelta
 from functools import wraps 
 # Importação necessária para usar o filtro moderno no Firestore
@@ -31,7 +31,7 @@ if not firebase_admin._apps:
     cred_json = os.environ.get("FIREBASE_CREDENTIALS")
     cred_dict = json.loads(cred_json)
     cred = credentials.Certificate(cred_dict)
-    initialize_app(cred) # type: ignore
+    initialize_app(cred)  # Inicializa o Firebase
 
 # 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
 UPLOAD_FOLDER = 'static/img/avatares' 
