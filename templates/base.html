@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PsicoAjuda - {{ page_title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                'psico-verde': '#48BB78', /* Verde saúde suave (Primário) */
+                'psico-azul': '#1E4620',  /* NOVO: Verde Floresta (Substituindo o Azul para contraste) */
+              },
+              fontFamily: {
+                  'sans': ['Inter', 'Roboto', 'system-ui', 'sans-serif'],
+              }
+            }
+          }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="font-sans bg-gray-50">
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="{{ url_for('index') }}" class="text-3xl font-extrabold text-psico-azul tracking-wider">PsicoAjuda</a>
+            
+            <div class="space-x-8 hidden md:flex items-center">
+                
+                {% if 'user_role' not in session %}
+                    <a href="{{ url_for('index') }}" class="text-gray-700 hover:text-psico-verde font-semibold transition duration-200">Início</a>
+                    <a href="{{ url_for('psicologos_list') }}" class="text-gray-700 hover:text-psico-verde font-semibold transition duration-200">Profissionais</a>
+                    <a href="{{ url_for('ajuda') }}" class="text-gray-700 hover:text-psico-verde font-semibold transition duration-200">Ajuda 24H</a>
+                {% endif %}
+                
+                {% if session.get('user_role') == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="text-gray-700 hover:text-psico-azul font-bold transition duration-200">DASHBOARD ADMIN</a>
+                    <a href="{{ url_for('cadastro_psicologo') }}" class="text-gray-700 hover:text-psico-verde font-semibold transition duration-200">Cadastrar PSI</a>
+                {% endif %}
+                
+                 {% if session.get('user_role') == 'psicologo' %}
+                    <a href="{{ url_for('dashboard') }}" class="text-gray-700 hover:text-psico-azul font-bold transition duration-200">MEU DASHBOARD</a>
+                {% endif %}
+
+                {% if 'user_role' not in session %}
+                    <a href="{{ url_for('triagem') }}" class="bg-psico-verde text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-psico-azul transition duration-200 text-sm">
+                        Fazer Triagem
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div>
+                 {% if 'user_role' in session %}
+                    <a href="{{ url_for('logout') }}" class="bg-red-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200 text-sm">Sair ({{ session.get('user_role').upper() }})</a>
+                 {% else %}
+                    <a href="{{ url_for('login') }}" class="text-psico-azul font-medium border border-psico-azul py-2 px-4 rounded-lg hover:bg-psico-azul hover:text-white transition duration-200 text-sm">Login (PSI/ADM)</a>
+                 {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-10 min-h-screen">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6 space-y-2">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-lg shadow-sm font-medium border 
+                            {% if category == 'error' %}bg-red-50 border-red-300 text-red-700
+                            {% elif category == 'info' %}bg-blue-50 border-blue-300 text-blue-700
+                            {% elif category == 'success' %}bg-green-50 border-psico-verde text-green-700
+                            {% else %}bg-green-50 border-psico-verde text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="bg-gray-200 mt-12 py-6 text-center text-gray-600">
+        &copy; 2025 PsicoAjuda. Todos os direitos reservados.
+    </footer>
+</body>
+</html>

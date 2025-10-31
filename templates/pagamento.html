@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto py-8">
+    <h1 class="text-4xl font-extrabold text-gray-900 text-center mb-2">Confirmação e Pagamento Seguro</h1>
+    <p class="text-lg text-gray-600 text-center mb-10">Revise seu agendamento e finalize a compra. Sua sessão está quase confirmada.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-xl space-y-6 h-fit border-l-4 border-psico-azul sticky top-24">
+            <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">Detalhes da Sessão</h2>
+            
+            <div class="space-y-3 text-gray-700">
+                <p><strong>Psicólogo(a):</strong> <span class="font-medium text-psico-azul">{{ agendamento.psicologo_nome }}</span></p>
+                <p><strong>Data e Hora:</strong> <span class="font-medium text-psico-verde">{{ agendamento.dataHoraSessao }}</span></p>
+                <p><strong>Tipo de Sessão:</strong> <span class="font-medium">{{ agendamento.sessaoTipo }}</span></p>
+            </div>
+            
+            <div class="h-px bg-gray-200"></div>
+            
+            <div class="flex justify-between items-center text-2xl font-bold">
+                <p class="text-gray-800">Valor Total:</p>
+                <div class="text-psico-verde">R$ {{ agendamento.valor | int }},00</div>
+            </div>
+
+            <div class="h-px bg-gray-200"></div>
+            
+            <p class="text-sm text-gray-500 font-semibold flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-psico-verde mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2h2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2h2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                </svg>
+                Pagamento 100% seguro e criptografado.
+            </p>
+        </div>
+
+        <div class="lg:col-span-3 bg-white p-8 rounded-xl shadow-xl space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800 border-b pb-2">Informações de Contato e Pagamento</h2>
+            
+            <form method="POST" action="{{ url_for('pagamento') }}" class="space-y-6">
+                
+                <div class="form-group">
+                    <label for="email" class="block text-sm font-medium text-gray-700">Seu E-mail para Confirmação</label>
+                    <input type="email" id="email" name="email" placeholder="seu.email@exemplo.com (Obrigatório)" 
+                           required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-psico-azul focus:border-psico-azul">
+                </div>
+                
+                <h3 class="text-xl font-bold text-gray-800 pt-4">Dados do Cartão (Simulado)</h3>
+                
+                <div class="form-group">
+                    <label for="cartao" class="block text-sm font-medium text-gray-700">Número do Cartão</label>
+                    <input type="text" id="cartao" name="cartao" placeholder="XXXX XXXX XXXX XXXX" 
+                           maxlength="19" autocomplete="off"
+                           required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-psico-azul focus:border-psico-azul">
+                </div>
+                
+                <div class="form-group">
+                    <label for="nome_cartao" class="block text-sm font-medium text-gray-700">Nome Impresso no Cartão</label>
+                    <input type="text" id="nome_cartao" name="nome_cartao" placeholder="Ex: MARIA SILVA" 
+                           required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-psico-azul focus:border-psico-azul">
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label for="validade" class="block text-sm font-medium text-gray-700">Validade</label>
+                        <input type="text" id="validade" name="validade" placeholder="MM/AA" 
+                               maxlength="5" autocomplete="off"
+                               required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-psico-azul focus:border-psico-azul">
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv" class="block text-sm font-medium text-gray-700">CVV</label>
+                        <input type="text" id="cvv" name="cvv" placeholder="***" 
+                               maxlength="4" autocomplete="off"
+                               required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-3 focus:ring-psico-azul focus:border-psico-azul">
+                    </div>
+                </div>
+
+                <button type="submit" class="bg-psico-verde text-white font-bold py-4 px-8 rounded-lg shadow-lg hover:bg-psico-azul transition duration-300 w-full text-xl" style="margin-top: 20px;">
+                    Finalizar Pagamento - R$ {{ agendamento.valor | int }},00
+                </button>
+                
+                <p class="text-xs text-gray-500 text-center">
+                    Ao clicar em finalizar, você concorda com nossa <a href="#" class="text-psico-azul hover:underline">Política de Reagendamento e Cancelamento</a>.
+                </p>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cartao = document.getElementById('cartao');
+        const validade = document.getElementById('validade');
+        const cvv = document.getElementById('cvv');
+
+        // FUNÇÃO GENÉRICA DE MÁSCARA
+        function maskInput(input, mask) {
+            input.addEventListener('input', (e) => {
+                let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não é dígito
+                let maskedValue = '';
+                let i = 0;
+                let j = 0;
+
+                while (i < mask.length && j < value.length) {
+                    if (mask[i] === '9') {
+                        maskedValue += value[j];
+                        j++;
+                    } else {
+                        maskedValue += mask[i];
+                    }
+                    i++;
+                }
+                e.target.value = maskedValue;
+            });
+        }
+
+        // 1. MÁSCARA DO CARTÃO (9999 9999 9999 9999)
+        maskInput(cartao, '9999 9999 9999 9999');
+
+        // 2. MÁSCARA DA VALIDADE (99/99)
+        // Mais complexa, para garantir o "/"
+        validade.addEventListener('input', (e) => {
+            let value = e.target.value.replace(/\D/g, ''); // Remove não-dígitos
+            if (value.length > 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2, 4);
+            }
+            e.target.value = value;
+        });
+
+        // 3. MÁSCARA DO CVV (9999)
+        maskInput(cvv, '9999'); 
+    });
+</script>
+
+{% endblock %}

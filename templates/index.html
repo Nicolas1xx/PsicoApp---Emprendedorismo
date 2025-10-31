@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center py-20">
+    <div class="space-y-8">
+        <span class="text-md font-bold tracking-widest text-psico-verde uppercase">PSICOLOGIA ONLINE E ACESSÍVEL</span>
+        <h1 class="text-6xl font-extrabold text-gray-900 leading-tight">
+            Cuidado Profissional. <span class="text-psico-azul">Onde Você Estiver.</span>
+        </h1>
+        <p class="text-xl text-gray-600 max-w-xl">
+            Conecte-se a psicólogos qualificados. Sua jornada de bem-estar começa agora, com segurança e a seriedade que você merece.
+        </p>
+        <div class="pt-2">
+            <a href="{{ url_for('triagem') }}" class="inline-block bg-psico-azul text-white font-bold py-4 px-10 rounded-full text-lg shadow-xl hover:bg-psico-verde transition duration-300 transform hover:scale-105">
+                Começar Triagem Guiada
+            </a>
+            <a href="{{ url_for('psicologos_list') }}" class="ml-6 text-psico-azul font-semibold hover:text-psico-verde transition duration-300 border-b-2 border-psico-azul hover:border-psico-verde text-lg">
+                Ver Profissionais →
+            </a>
+        </div>
+    </div>
+
+    <div class="hidden lg:block self-start">
+        <div class="w-full h-[500px] rounded-3xl shadow-2xl flex items-center justify-center border-4 border-psico-verde/30 overflow-hidden">
+            <img 
+                src="../static/img/logo/thumbnail_ff3b447f-ae0e-48db-be35-37df57ac6127.jpg" 
+                alt="Psicóloga em atendimento online em uma chamada de vídeo"
+                class="w-full h-full object-cover rounded-3xl transform hover:scale-105 transition duration-500"
+            >
+        </div>
+    </div>
+</section>
+
+<section id="livros-motivacionais" class="py-24 bg-gray-100 mt-24 rounded-3xl shadow-inner">
+    <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-4xl font-extrabold text-gray-800 mb-6 text-center">
+            📚 Leituras que Transformam
+        </h2>
+
+        <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto text-lg">
+            Recomendamos livros de autoconhecimento e motivação para complementar sua jornada de bem-estar.
+        </p>
+
+        <div id="livros-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-10">
+            
+            <!-- LIVRO 1 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-t-8 border-psico-verde/70 overflow-hidden flex flex-col">
+                <div class="w-full h-56 overflow-hidden cursor-pointer" onclick="openModal(0)">
+                    <img src="../static/img/livros/opoderdohabito.png" alt="Capa do Livro O Poder do Hábito" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">O Poder do Hábito</h3>
+                    <p class="text-sm text-psico-verde font-medium mb-3">Charles Duhigg</p>
+                    <p class="text-gray-700 text-sm mb-4 flex-grow">
+                        Uma análise profunda sobre como os hábitos se formam, influenciam nossa vida e como podemos transformá-los com consciência.
+                    </p>
+                    <button onclick="openModal(0)" class="mt-auto inline-block text-psico-azul font-bold hover:text-psico-verde transition duration-200 text-sm text-left">Ver Detalhes →</button>
+                </div>
+            </div>
+
+            <!-- LIVRO 2 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-t-8 border-psico-verde/70 overflow-hidden flex flex-col">
+                <div class="w-full h-56 overflow-hidden cursor-pointer" onclick="openModal(1)">
+                    <img src="../static/img/livros/coragemdeserimperfeito.png" alt="Capa do Livro A Coragem de Ser Imperfeito" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">A Coragem de Ser Imperfeito</h3>
+                    <p class="text-sm text-psico-verde font-medium mb-3">Brené Brown</p>
+                    <p class="text-gray-700 text-sm mb-4 flex-grow">
+                        Uma obra inspiradora sobre vulnerabilidade, aceitação e a força que existe em reconhecer nossas imperfeições.
+                    </p>
+                    <button onclick="openModal(1)" class="mt-auto inline-block text-psico-azul font-bold hover:text-psico-verde transition duration-200 text-sm text-left">Ver Detalhes →</button>
+                </div>
+            </div>
+
+            <!-- LIVRO 3 -->
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-t-8 border-psico-verde/70 overflow-hidden flex flex-col">
+                <div class="w-full h-56 overflow-hidden cursor-pointer" onclick="openModal(2)">
+                    <img src="../static/img/livros/anovapsicologia.png" alt="Capa do Livro Mindset: A Nova Psicologia" class="w-full h-full object-cover">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <h3 class="text-xl font-bold text-gray-900 mb-1">Mindset: A Nova Psicologia</h3>
+                    <p class="text-sm text-psico-verde font-medium mb-3">Carol S. Dweck</p>
+                    <p class="text-gray-700 text-sm mb-4 flex-grow">
+                        Uma leitura essencial sobre como mudar a mentalidade pode transformar o sucesso e o crescimento pessoal.
+                    </p>
+                    <button onclick="openModal(2)" class="mt-auto inline-block text-psico-azul font-bold hover:text-psico-verde transition duration-200 text-sm text-left">Ver Detalhes →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MODAL -->
+<div id="modal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl w-11/12 md:w-3/4 lg:w-2/3 max-h-[90vh] overflow-y-auto p-6 relative">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">&times;</button>
+        <div id="modal-content" class="prose max-w-full"></div>
+    </div>
+</div>
+
+<script>
+const livros = [
+     {
+        titulo: "O Poder do Hábito",
+        autor: "Charles Duhigg",
+        conteudo: `
+        <h2>Capítulo 1: A Força Invisível dos Hábitos</h2>
+        <p>Os hábitos moldam silenciosamente quem somos. Eles guiam nossas decisões, influenciam nossas emoções e determinam grande parte dos nossos resultados. Cada escolha repetida é uma semente plantada — e, com o tempo, ela floresce em comportamento.</p>
+        <p>Charles Duhigg nos revela que todo hábito segue um padrão: gatilho, rotina e recompensa. Quando entendemos esse ciclo, ganhamos o poder de substituí-lo por algo melhor. Mudar um hábito não é força de vontade; é estratégia e consciência.</p>
+
+        <h2>Capítulo 2: Reprogramando o Cérebro</h2>
+        <p>Mudar hábitos exige paciência e propósito. O cérebro humano busca o caminho mais fácil, mas com repetição e clareza de intenção, novas conexões neurais se formam. O que antes era esforço se torna natural.</p>
+        <p>Empresas, atletas e líderes de sucesso aplicam esse princípio diariamente. Eles não confiam apenas na motivação — constroem sistemas que tornam o bom comportamento inevitável.</p>
+
+        <h2>Capítulo 3: Pequenas Mudanças, Grandes Resultados</h2>
+        <p>Transformações reais nascem de mudanças pequenas e consistentes. Um novo hábito diário, por menor que pareça, cria um efeito cascata em todas as áreas da vida. Cada pequena vitória fortalece a identidade de quem está crescendo.</p>
+        <p>O verdadeiro poder do hábito não está em fazer muito, mas em fazer sempre. A constância é o que transforma intenção em realização, e sonhos em realidade.</p>`
+    },
+    {
+        titulo: "A Coragem de Ser Imperfeito",
+        autor: "Brené Brown",
+        conteudo: `
+        <h2>Capítulo 1: A Beleza da Vulnerabilidade</h2>
+        <p>Ser vulnerável é ter coragem de se mostrar ao mundo como realmente é — sem máscaras, sem medo de julgamento. Brené Brown nos ensina que a vulnerabilidade é o berço da empatia, da criatividade e do amor verdadeiro.</p>
+        <p>Abraçar as próprias imperfeições é aceitar que somos humanos, e que o valor não está em ser perfeito, mas em ser autêntico.</p>
+
+        <h2>Capítulo 2: Libertando-se da Vergonha</h2>
+        <p>A vergonha é o maior inimigo da autenticidade. Ela nos convence de que não somos bons o suficiente. Mas quando damos voz às nossas histórias, a vergonha perde o poder — porque aquilo que é dito em voz alta não pode mais nos controlar.</p>
+        <p>Viver com coragem é dizer: “Eu sou suficiente”. É escolher a compaixão no lugar da crítica, o amor no lugar da cobrança e a verdade no lugar da aparência.</p>
+
+        <h2>Capítulo 3: A Força da Imperfeição</h2>
+        <p>Não existe vida plena sem fracasso, rejeição e incerteza. A diferença está em como reagimos a eles. Quando aceitamos que errar faz parte do processo, descobrimos a liberdade de tentar de novo — e de viver com mais leveza.</p>
+        <p>Ser imperfeito é o que nos torna únicos. E, paradoxalmente, é o que nos conecta mais profundamente uns aos outros.</p>`
+    },
+    {
+        titulo: "Mindset: A Nova Psicologia do Sucesso",
+        autor: "Carol S. Dweck",
+        conteudo: `
+        <h2>Capítulo 1: Descobrindo o Mindset</h2>
+        <p>O modo como pensamos sobre nós mesmos define tudo. Carol Dweck apresenta dois tipos de mentalidade: a fixa e a de crescimento. Enquanto a primeira teme o erro, a segunda o enxerga como um passo essencial para evoluir.</p>
+        <p>Adotar o mindset de crescimento é entender que talento não é destino — é desenvolvimento. Cada tentativa é um degrau na escada do aprendizado.</p>
+
+        <h2>Capítulo 2: O Poder do Esforço</h2>
+        <p>O sucesso não nasce do dom, mas da persistência. Grandes conquistas são o resultado de pequenas ações repetidas com disciplina. A mentalidade de crescimento transforma obstáculos em oportunidades e erros em lições.</p>
+        <p>Com esse olhar, o esforço deixa de ser um peso e passa a ser um privilégio: a chance de se tornar melhor do que ontem.</p>
+
+        <h2>Capítulo 3: Crescer é Escolher</h2>
+        <p>Desenvolver um novo mindset é uma escolha diária. É decidir aprender com as falhas, celebrar o progresso e acreditar que sempre há espaço para evoluir. Essa atitude muda não apenas o desempenho, mas o sentido da própria vida.</p>
+        <p>Crescer é se permitir recomeçar — com humildade, paciência e fé na jornada.</p>`
+    }
+];
+
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modal-content');
+
+function openModal(index) {
+    modalContent.innerHTML = `
+        <h1 class="text-2xl font-bold mb-4">${livros[index].titulo}</h1>
+        <p class="text-sm text-psico-verde mb-4">Por ${livros[index].autor}</p>
+        ${livros[index].conteudo}
+    `;
+    modal.classList.remove('hidden');
+}
+
+function closeModal() {
+    modal.classList.add('hidden');
+    modalContent.innerHTML = '';
+}
+</script>
+
+<section class="mt-20 py-16 text-center">
+    <h2 class="text-4xl font-extrabold text-gray-800 mb-8">
+        Comece sua Transformação Hoje
+    </h2>
+    <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+        Dê o primeiro passo em direção ao seu bem-estar. Nossos psicólogos estão prontos para te ajudar.
+    </p>
+    <a href="{{ url_for('triagem') }}" class="inline-block bg-psico-verde text-white font-bold py-5 px-16 rounded-full text-xl shadow-2xl hover:bg-psico-azul transition duration-300 transform hover:scale-105">
+        Quero Iniciar a Terapia
+    </a>
+</section>
+{% endblock %}

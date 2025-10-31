@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="login-section container text-center" style="max-width: 500px;">
+    <h1>Acesso do Psicólogo</h1>
+    <p class="lead-text">Use suas credenciais do Firebase para acessar o Dashboard.</p>
+
+    <div class="form-container">
+        <form method="POST" action="{{ url_for('login') }}">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" required placeholder="seu.email@psicoapp.com">
+            </div>
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" required placeholder="••••••••">
+            </div>
+            
+            <button type="submit" class="btn btn-login btn-large btn-full-width">Entrar</button>
+            
+            <p style="margin-top: 20px; font-size: 0.9em;"><a href="#">Esqueceu a senha?</a></p>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="dashboard-section container">
+    <h1>Olá, Dr(a). {{ psicologo.nome.split(' ')[0] }}!</h1>
+    <p class="lead-text">Seu painel de gerenciamento de sessões.</p>
+
+    {# Verificação e Filtragem dos Agendamentos em Quatro Listas #}
+    {% if agendamentos %}
+        {% set confirmadas = agendamentos | selectattr('status', 'equalto', 'Confirmado') | list %}
+        {% set pendentes = agendamentos | selectattr('status', 'equalto', 'Pendente') | list %}
+        {% set realizadas = agendamentos | selectattr('status', 'equalto', 'Realizada') | list %}
+        {% set canceladas = agendamentos | selectattr('status', 'equalto', 'Cancelada') | list %}
+    {% else %}
+        {% set confirmadas = [] %}
+        {% set pendentes = [] %}
+        {% set realizadas = [] %}
+        {% set canceladas = [] %}
+    {% endif %}
+
+    <div class="dashboard-grid-gestao">
+
+        {# ========================================================== #}
+        {# 1. SESSÕES CONFIRMADAS (PRÓXIMAS) #}
+        {#    Ações: Registrar, Cancelar e Entrar #}
+        {# ========================================================== #}
+        <div class="agendamentos-group group-confirmadas">
+            <h2><i class="fas fa-calendar-check"></i> Sessões Confirmadas (Próximas)</h2>
+            {% if confirmadas %}
+                {% for agendamento in confirmadas %}
+                    <div class="agendamento-card card-confirmado">
+                        <div class="data-hora-agendada">{{ agendamento.dataHoraSessao }}</div>
+                        <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+                        <p><strong>Tipo:</strong> {{ agendamento.sessaoTipo }}</p>
+                        <p class="status-info" style="color: var(--cor-primaria);">Status: {{ agendamento.status }}</p>
+                        
+                        {# AÇÕES #}
+                        <button class="btn btn-primary btn-small" onclick="openModal('finalizarModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-check-circle"></i> Registrar Consulta
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="openModal('cancelarModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </button>
+                        <a href="{{ url_for('sala_sessao', session_id=agendamento.linkSessao.split('/')[-1]) }}" target="_blank" class="btn btn-join btn-small">
+                            <i class="fas fa-video"></i> Entrar na Sessão
+                        </a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="status-info alert-info">Nenhuma sessão confirmada no momento.</p>
+            {% endif %}
+        </div>
+
+        {# ========================================================== #}
+        {# 2. SESSÕES PENDENTES (Aguardando Confirmação) #}
+        {#    Ações: CONFIRMAR E CANCELAR #}
+        {# ========================================================== #}
+        <div class="agendamentos-group group-pendentes">
+            <h2><i class="fas fa-hourglass-half"></i> Sessões Pendentes</h2>
+            {% if pendentes %}
+                {% for agendamento in pendentes %}
+                    <div class="agendamento-card card-pendente">
+                        <div class="data-hora-agendada">{{ agendamento.dataHoraSessao }}</div>
+                        <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+                        <p><strong>Tipo:</strong> {{ agendamento.sessaoTipo }}</p>
+                        <p class="status-info" style="color: orange;">Status: {{ agendamento.status }}</p>
+                        
+                        {# AÇÕES: CONFIRMAR e Cancelar (NOVO FLUXO) #}
+                        <form action="{{ url_for('confirmar_agendamento', doc_id=agendamento.doc_id) }}" method="POST" style="display:inline;">
+                             <button type="submit" class="btn btn-primary btn-small">
+                                <i class="fas fa-check"></i> Confirmar Agendamento
+                             </button>
+                        </form>
+                        <button class="btn btn-secondary btn-small" onclick="openModal('cancelarModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-times-circle"></i> Cancelar Agendamento
+                        </button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="status-info alert-success">Nenhuma sessão pendente. Ótimo!</p>
+            {% endif %}
+        </div>
+
+        {# ========================================================== #}
+        {# 3. SESSÕES REALIZADAS (HISTÓRICO CURTO) #}
+        {#    Ações: Ver Prontuário e EXCLUIR #}
+        {# ========================================================== #}
+        <div class="agendamentos-group group-realizadas">
+            <h2><i class="fas fa-clipboard-check"></i> Sessões Realizadas</h2>
+            {% if realizadas %}
+                {% for agendamento in realizadas %}
+                    <div class="agendamento-card card-realizada">
+                        <div class="data-hora-agendada">{{ agendamento.dataHoraSessao }}</div>
+                        <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+                        <p><strong>Tipo:</strong> {{ agendamento.sessaoTipo }}</p>
+                        <p class="status-info" style="color: green;">Status: {{ agendamento.status }}</p>
+
+                        {# AÇÕES #}
+                        <button class="btn btn-info btn-small" 
+                                onclick="openModal('prontuarioModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-eye"></i> Visualizar Prontuário
+                        </button>
+                        <button class="btn btn-danger btn-small" 
+                                onclick="openModal('excluirModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-trash-alt"></i> Excluir Registro
+                        </button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="status-info alert-info">Nenhuma sessão concluída recentemente.</p>
+            {% endif %}
+        </div>
+        
+        {# ========================================================== #}
+        {# 4. SESSÕES CANCELADAS (HISTÓRICO CURTO) #}
+        {#    Ações: EXCLUIR #}
+        {# ========================================================== #}
+        <div class="agendamentos-group group-canceladas">
+            <h2><i class="fas fa-ban"></i> Sessões Canceladas</h2>
+            {% if canceladas %}
+                {% for agendamento in canceladas %}
+                    <div class="agendamento-card card-cancelada">
+                        <div class="data-hora-agendada">{{ agendamento.dataHoraSessao }}</div>
+                        <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+                        <p><strong>Tipo:</strong> {{ agendamento.sessaoTipo }}</p>
+                        <p class="status-info" style="color: red;">Status: {{ agendamento.status }}</p>
+                        <p class="motivo-cancelamento">Motivo: {{ agendamento.motivo_cancelamento | default('Não registrado.', true) }}</p>
+
+                        {# AÇÃO #}
+                        <button class="btn btn-danger btn-small" 
+                                onclick="openModal('excluirModal-{{ agendamento.doc_id }}')">
+                            <i class="fas fa-trash-alt"></i> Excluir Registro
+                        </button>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="status-info alert-success">Nenhuma sessão cancelada recentemente.</p>
+            {% endif %}
+        </div>
+        
+    </div>
+</section>
+
+{# ========================================================== #}
+{# MODALS PARA AÇÕES DO PSICÓLOGO (FINALIZAR, CANCELAR, VISUALIZAR, EXCLUIR) #}
+{# ========================================================== #}
+{% for agendamento in agendamentos %}
+    
+    {# MODAL 1: FINALIZAR/REGISTRAR CONSULTA - APENAS SE CONFIRMADO #}
+    {% if agendamento.status == 'Confirmado' %}
+        <div id="finalizarModal-{{ agendamento.doc_id }}" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h3>Registrar Consulta - {{ agendamento.dataHoraSessao }}</h3>
+                <p>Prontuário da sessão com {{ agendamento.usuarioEmail }}.</p>
+                
+                <form action="{{ url_for('finalizar_consulta', doc_id=agendamento.doc_id) }}" method="POST">
+                    <div class="form-group">
+                        <label for="prontuario-{{ agendamento.doc_id }}">Prontuário da Sessão (Obrigatório):</label>
+                        <textarea id="prontuario-{{ agendamento.doc_id }}" name="prontuario" rows="8" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar e Finalizar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('finalizarModal-{{ agendamento.doc_id }}')">Fechar</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    {# MODAL 2: CANCELAR CONSULTA - PARA CONFIRMADO OU PENDENTE #}
+    {% if agendamento.status == 'Confirmado' or agendamento.status == 'Pendente' %}
+        <div id="cancelarModal-{{ agendamento.doc_id }}" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h3>Cancelar Agendamento - {{ agendamento.dataHoraSessao }}</h3>
+                <p>Tem certeza que deseja cancelar a sessão de {{ agendamento.usuarioEmail }}? O status será alterado para 'Cancelada'.</p>
+                
+                <form action="{{ url_for('cancelar_consulta', doc_id=agendamento.doc_id) }}" method="POST">
+                    <div class="form-group">
+                        <label for="motivo_cancelamento-{{ agendamento.doc_id }}">Motivo (Opcional):</label>
+                        <input type="text" id="motivo_cancelamento-{{ agendamento.doc_id }}" name="motivo_cancelamento">
+                    </div>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Sim, Cancelar</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('cancelarModal-{{ agendamento.doc_id }}')">Manter</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    {# MODAL 3: VISUALIZAR PRONTUÁRIO - APENAS SE REALIZADA #}
+    {% if agendamento.status == 'Realizada' %}
+        <div id="prontuarioModal-{{ agendamento.doc_id }}" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h3>Prontuário da Sessão - {{ agendamento.dataHoraSessao }}</h3>
+                <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+                
+                <div class="form-group">
+                    <label>Conteúdo do Prontuário:</label>
+                    <div style="border: 1px solid #ccc; padding: 15px; border-radius: 4px; background-color: #f9f9f9; white-space: pre-wrap; max-height: 400px; overflow-y: auto;">
+                        {{ agendamento.prontuario | default('Nenhum prontuário encontrado para esta sessão.', true) }}
+                    </div>
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="closeModal('prontuarioModal-{{ agendamento.doc_id }}')" style="margin-top: 20px;">Fechar</button>
+            </div>
+        </div>
+    {% endif %}
+
+    {# MODAL 4: EXCLUSÃO - PARA REALIZADA E CANCELADA #}
+    {% if agendamento.status == 'Realizada' or agendamento.status == 'Cancelada' %}
+        <div id="excluirModal-{{ agendamento.doc_id }}" class="modal" style="display:none;">
+            <div class="modal-content">
+                <h3>Confirmar Exclusão</h3>
+                <p>Você tem certeza que deseja **EXCLUIR PERMANENTEMENTE** este registro de **{{ agendamento.status }}**?</p>
+                <p style="font-weight: bold;">Cliente: {{ agendamento.usuarioEmail }}</p>
+                
+                {# Chama a rota de exclusão no app.py #}
+                <form action="{{ url_for('excluir_agendamento', doc_id=agendamento.doc_id) }}" method="POST" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Sim, Excluir Registro
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('excluirModal-{{ agendamento.doc_id }}')">
+                        Não, Manter
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+    
+{% endfor %}
+
+{# --- JS E CSS BÁSICO PARA MODALS E LAYOUT (Mantenha) --- #}
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = 'block';
+    }
+    function closeModal(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+<style>
+/* ==========================================================
+ * CORES E VARIÁVEIS (Adapte ao seu tema, se necessário)
+ * ========================================================== */
+:root {
+    --cor-primaria: #007bff; /* Exemplo de cor azul */
+    --cor-sucesso: green;
+    --cor-alerta: orange;
+    --cor-perigo: red;
+}
+
+/* Estrutura de grid para os 4 blocos */
+.dashboard-grid-gestao {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas */
+    gap: 30px;
+    margin-top: 30px;
+}
+@media (max-width: 992px) {
+    .dashboard-grid-gestao {
+        grid-template-columns: 1fr; /* 1 coluna em telas menores */
+    }
+}
+
+/* Estilo dos Grupos de Agendamento */
+.agendamentos-group {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.agendamentos-group h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+    font-size: 1.4em;
+    color: #333;
+}
+
+/* Estilo dos Cards Individuais */
+.agendamento-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    position: relative;
+}
+.data-hora-agendada {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: var(--cor-primaria);
+    color: white;
+    padding: 5px 10px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+.status-info {
+    margin: 5px 0 10px;
+    font-size: 0.9em;
+}
+
+/* Cores de destaque nas bordas dos cards */
+.card-confirmado { border-left: 5px solid var(--cor-primaria); }
+.card-pendente { border-left: 5px solid var(--cor-alerta); }
+.card-realizada { border-left: 5px solid var(--cor-sucesso); }
+.card-cancelada { border-left: 5px solid var(--cor-perigo); }
+
+/* CSS BÁSICO para Modal (ajuste ao seu tema) */
+.modal {
+    position: fixed; 
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6); 
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto; 
+    padding: 30px;
+    border: 1px solid #888;
+    width: 90%; 
+    max-width: 650px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+.form-group textarea, .form-group input[type="text"] { 
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    box-sizing: border-box; 
+    font-size: 1em;
+}
+
+/* Estilos de Botões */
+.btn-primary, .btn-secondary, .btn-danger, .btn-info, .btn-join { 
+    margin-right: 10px; 
+    padding: 10px 18px; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: background-color 0.3s;
+    text-decoration: none; /* Para links */
+    display: inline-block;
+}
+.btn-primary { background-color: var(--cor-primaria); color: white; } 
+.btn-danger { background-color: var(--cor-perigo); color: white; } 
+.btn-secondary { background-color: #6c757d; color: white; } 
+.btn-info { background-color: #17a2b8; color: white; } 
+.btn-join { background-color: var(--cor-sucesso); color: white; } 
+
+.btn-small { 
+    font-size: 0.85em; 
+    padding: 6px 12px;
+    margin-top: 5px;
+}
+.motivo-cancelamento {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+}
+</style>
+{% endblock %}

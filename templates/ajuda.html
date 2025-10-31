@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="text-center py-10 bg-red-50 rounded-xl shadow-2xl border-2 border-red-400 animate-pulse-slow">
+    <h1 class="text-5xl font-extrabold text-red-700 mb-4">
+        ATENÇÃO: Ajuda Imediata 24 Horas
+    </h1>
+    <p class="text-xl text-red-600 max-w-4xl mx-auto mb-10 font-semibold">
+        Se você ou alguém está em perigo imediato, por favor, pare de navegar e use os contatos de emergência abaixo. **Sua segurança é a prioridade.**
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        
+        <div class="bg-white p-8 rounded-2xl shadow-2xl border-4 border-red-500 transform hover:scale-[1.02] transition duration-300">
+            <div class="text-6xl text-red-600 mb-4 mx-auto w-fit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.64-.56-.23-1.2-.1-1.63.32l-2.75 2.75c-1.92-1.27-3.69-3.05-4.96-4.96l2.75-2.75c.42-.42.55-1.06.32-1.63C8.75 6.95 8.55 5.75 8.55 4.5c0-1.24-.76-2.5-2.2-2.5H4.5C3.39 2 2 3.4 2 4.5 2 13.52 8.48 22 17.5 22c1.1 0 2.5-.9 2.5-2.2v-1.8c0-1.44-1.26-2.2-2.5-2.2zM6 4.5h2v3H6v-3zm0 13h12v-3H6v3z"/></svg>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Centro de Valorização da Vida (CVV)</h2>
+            <p class="text-gray-600 mb-6 font-medium">Apoio Emocional e Prevenção ao Suicídio. Converse com um voluntário em total sigilo.</p>
+            <a href="tel:188" class="inline-block bg-red-600 text-white font-extrabold py-4 px-12 rounded-full text-2xl shadow-red-500/50 shadow-lg hover:bg-red-700 transition duration-300 transform hover:scale-105">
+                LIGUE 188
+            </a>
+            <p class="text-sm text-gray-500 mt-3">Ligação gratuita em todo o Brasil, 24 horas por dia.</p>
+        </div>
+        
+        <div class="bg-white p-8 rounded-2xl shadow-xl border-4 border-psico-azul transform hover:scale-[1.02] transition duration-300">
+             <div class="text-6xl text-psico-azul mb-4 mx-auto w-fit">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            </div>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Emergência e Risco de Vida</h2>
+            <p class="text-gray-600 mb-6 font-medium">Acione o socorro médico ou policial para situações de risco físico imediato.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="tel:192" class="bg-psico-azul text-white font-extrabold py-3 px-8 rounded-full text-xl shadow-lg hover:bg-psico-azul/80 transition duration-300">
+                    SAMU (192)
+                </a>
+                <a href="tel:190" class="bg-gray-700 text-white font-extrabold py-3 px-8 rounded-full text-xl shadow-lg hover:bg-gray-800 transition duration-300">
+                    POLÍCIA (190)
+                </a>
+            </div>
+            <p class="text-sm text-gray-500 mt-3">Busque o hospital psiquiátrico ou UPA mais próximo, se possível.</p>
+        </div>
+    </div>
+</section>
+
+<section class="mt-16 max-w-5xl mx-auto text-left">
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+        
+        <div>
+            <h2 class="text-3xl font-bold text-psico-azul border-b-2 border-psico-verde pb-3 mb-6">Como Ajudar Alguém em Crise</h2>
+            <p class="text-lg text-gray-700 mb-4 font-medium">Se você está dando suporte a um familiar ou amigo, siga estas orientações:</p>
+            <ol class="list-decimal list-inside text-gray-600 space-y-3 pl-4">
+                <li class="p-2 border-l-4 border-psico-verde bg-green-50 rounded-r-md">
+                    **Mantenha a Calma:** Sua tranquilidade ajuda a reduzir a ansiedade da pessoa em crise.
+                </li>
+                <li class="p-2 border-l-4 border-psico-verde bg-green-50 rounded-r-md">
+                    **Ouça Ativamente:** Valide os sentimentos dela sem julgar ou tentar dar soluções imediatas.
+                </li>
+                <li class="p-2 border-l-4 border-psico-verde bg-green-50 rounded-r-md">
+                    **Remova o Perigo:** Retire do ambiente objetos cortantes, armas ou excesso de medicamentos.
+                </li>
+                <li class="p-2 border-l-4 border-psico-verde bg-green-50 rounded-r-md">
+                    **Não Deixe Sozinho:** Permaneça com a pessoa e busque ajuda profissional imediata (LIGUE 188).
+                </li>
+            </ol>
+        </div>
+        
+        <div>
+            <h2 class="text-3xl font-bold text-psico-azul border-b-2 border-psico-verde pb-3 mb-6">Suporte Contínuo (Não Emergencial)</h2>
+            <p class="text-lg text-gray-700 mb-6">Se você busca acompanhamento profissional ou autoajuda para um momento de dificuldade, nós podemos ajudar:</p>
+            
+            <div class="space-y-4">
+                <a href="{{ url_for('psicologos_list') }}" class="flex items-center justify-between p-4 bg-psico-verde text-white font-bold rounded-lg shadow-md hover:bg-psico-azul transition duration-300">
+                    <span>Agendar Sessão de Terapia Online</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+                
+                <a href="{{ url_for('login') }}" class="flex items-center justify-between p-4 bg-psico-azul text-white font-bold rounded-lg shadow-md hover:bg-psico-verde transition duration-300">
+                    <span>Acessar Conteúdo Restrito de Autoajuda</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                </a>
+            </div>
+        </div>
+        
+    </div>
+</section>
+
+<style>
+/* Simulação de animação 'animate-pulse-slow' */
+@keyframes pulse-slow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 3s infinite;
+}
+</style>
+{% endblock %}

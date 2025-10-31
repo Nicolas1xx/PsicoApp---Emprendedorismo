@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="dashboard-section container">
+    <h1>Histórico Clínico e Administrativo</h1>
+    <p class="lead-text">
+        Visualize todos os prontuários de sessões realizadas e agendamentos cancelados.
+    </p>
+
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary back-btn">
+        <i class="fas fa-arrow-left"></i> Voltar para o Dashboard
+    </a>
+
+    <div class="historico-list">
+        {% if historico %}
+            {% for agendamento in historico %}
+                <div class="historico-card 
+                    {% if agendamento.status == 'Realizada' %}card-realizada
+                    {% elif agendamento.status == 'Cancelada' %}card-cancelada
+                    {% else %}card-pendente{% endif %}">
+
+                    <div class="historico-header">
+                        <div class="data-status">
+                            <span class="data-sessao">
+                                Data: <strong>{{ agendamento.data_formatada }}</strong>
+                            </span>
+                            <span class="status-badge 
+                                {% if agendamento.status == 'Realizada' %}badge-realizada
+                                {% elif agendamento.status == 'Cancelada' %}badge-cancelada
+                                {% else %}badge-pendente{% endif %}">
+                                {{ agendamento.status }}
+                            </span>
+                        </div>
+                        <h3>Cliente: {{ agendamento.usuarioEmail }}</h3>
+                    </div>
+
+                    <p>Tipo de Sessão: {{ agendamento.sessaoTipo }}</p>
+
+                    <div class="historico-actions">
+                        {% if agendamento.status == 'Realizada' %}
+                            <button class="btn btn-info btn-small"
+                                    onclick="openModal('prontuarioHistModal-{{ loop.index }}')">
+                                <i class="fas fa-file-alt"></i> Ver Prontuário
+                            </button>
+                        {% elif agendamento.status == 'Cancelada' %}
+                            <p class="motivo-cancelamento">
+                                Motivo do Cancelamento: {{ agendamento.motivo_cancelamento | default('Motivo não registrado.', true) }}
+                            </p>
+                        {% endif %}
+
+                        <!-- NOVO BOTÃO DE EXCLUSÃO -->
+                        <button class="btn btn-danger btn-small"
+                                onclick="openModal('excluirHistModal-{{ loop.index }}')">
+                            <i class="fas fa-trash-alt"></i> Excluir Registro
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="sem-registro">
+                Nenhum registro de histórico (sessões concluídas ou canceladas) encontrado.
+            </p>
+        {% endif %}
+    </div>
+</section>
+
+{% for agendamento in historico %}
+    {% if agendamento.status == 'Realizada' %}
+        <!-- MODAL DE PRONTUÁRIO -->
+        <div id="prontuarioHistModal-{{ loop.index }}" class="modal">
+            <div class="modal-content">
+                <h3>Prontuário da Sessão - {{ agendamento.data_formatada }}</h3>
+                <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+
+                <div class="form-group">
+                    <label>Conteúdo do Prontuário:</label>
+                    <div class="prontuario-conteudo">
+                        {{ agendamento.prontuario | default('Nenhum prontuário encontrado para esta sessão.', true) }}
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary" onclick="closeModal('prontuarioHistModal-{{ loop.index }}')">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if agendamento.status == 'Realizada' or agendamento.status == 'Cancelada' %}
+        <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+        <div id="excluirHistModal-{{ loop.index }}" class="modal">
+            <div class="modal-content">
+                <h3>Confirmar Exclusão</h3>
+                <p>Você tem certeza que deseja <strong>EXCLUIR PERMANENTEMENTE</strong> este registro de <strong>{{ agendamento.status }}</strong>?</p>
+                <p><strong>Cliente:</strong> {{ agendamento.usuarioEmail }}</p>
+
+                <form action="{{ url_for('excluir_agendamento', doc_id=agendamento.doc_id) }}" method="POST" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Sim, Excluir Registro
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('excluirHistModal-{{ loop.index }}')">
+                        Não, Manter
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endfor %}
+
+<script>
+function openModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'block';
+}
+
+function closeModal(id) {
+    const modal = document.getElementById(id);
+    if (modal) modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = "none";
+    }
+};
+</script>
+
+<style>
+/* ===============================
+   HISTÓRICO CLÍNICO E ADMINISTRATIVO
+   =============================== */
+.dashboard-section {
+    margin-top: 30px;
+}
+
+.back-btn {
+    margin-bottom: 20px;
+}
+
+/* Cards principais */
+.historico-card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Bordas laterais coloridas */
+.card-realizada { border-left: 5px solid #28a745; }
+.card-cancelada { border-left: 5px solid #dc3545; }
+.card-pendente  { border-left: 5px solid #6c757d; }
+
+.historico-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.data-status {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.status-badge {
+    font-weight: bold;
+    font-size: 0.8em;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.badge-realizada { background-color: #28a745; }
+.badge-cancelada { background-color: #dc3545; }
+.badge-pendente  { background-color: #6c757d; }
+
+.motivo-cancelamento {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 10px;
+}
+
+.sem-registro {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.historico-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    align-items: center;
+}
+
+/* ===============================
+   BOTÕES
+   =============================== */
+.btn-secondary { 
+    background-color: #6c757d; 
+    color: white; 
+    border: none; 
+    padding: 8px 15px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: 0.2s ease;
+}
+.btn-secondary:hover { background-color: #5a6268; }
+
+.btn-info { 
+    background-color: #17a2b8; 
+    color: white; 
+    border: none; 
+    padding: 8px 15px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: 0.2s ease;
+}
+.btn-info:hover { background-color: #138496; }
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white; 
+    border: none; 
+    padding: 8px 15px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: 0.2s ease;
+}
+.btn-danger:hover { background-color: #c82333; }
+
+.btn-small { 
+    font-size: 0.9em; 
+    padding: 6px 12px;
+}
+
+/* ===============================
+   MODAL
+   =============================== */
+.modal {
+    display: none;
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background-color: #fefefe; 
+    margin: 5% auto; 
+    padding: 30px; 
+    border: 1px solid #888; 
+    width: 90%; 
+    max-width: 700px; 
+    border-radius: 8px; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.form-group label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: bold; 
+    color: #333; 
+}
+
+.prontuario-conteudo {
+    border: 1px solid #ccc; 
+    padding: 15px; 
+    border-radius: 4px; 
+    background-color: #f9f9f9; 
+    white-space: pre-wrap; 
+    max-height: 400px; 
+    overflow-y: auto;
+}
+</style>
+{% endblock %}

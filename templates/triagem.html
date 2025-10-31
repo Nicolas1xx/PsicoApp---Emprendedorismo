@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-2xl border-t-8 border-psico-azul">
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-4 text-center">
+        Avaliação Rápida de Necessidades
+    </h1>
+    <p class="text-lg text-gray-600 mb-8 text-center">
+        Responda a estas perguntas rápidas para que possamos sugerir o tipo de profissional mais adequado para você.
+    </p>
+
+    <form method="POST" action="{{ url_for('triagem') }}" class="space-y-8">
+        
+        <div class="p-5 border border-gray-200 rounded-lg bg-gray-50">
+            <label for="foco_principal" class="block text-xl font-semibold text-psico-azul mb-3">1. Qual é a principal área que você gostaria de trabalhar?</label>
+            <select id="foco_principal" name="foco_principal" required class="mt-1 block w-full py-3 px-4 border border-gray-300 rounded-lg shadow-sm focus:ring-psico-verde focus:border-psico-verde">
+                <option value="" disabled selected>-- Selecione um foco --</option>
+                <option value="Ansiedade">Ansiedade, Estresse e Preocupação</option>
+                <option value="Depressão">Tristeza Profunda ou Depressão</option>
+                <option value="Relacionamento">Problemas de Relacionamento (Casal ou Familiar)</option>
+                <option value="Luto">Luto ou Perda</option>
+                <option value="Carreira">Questões de Carreira e Propósito</option>
+                <option value="Autoestima">Autoestima e Autoconhecimento</option>
+            </select>
+        </div>
+
+        <div class="p-5 border border-gray-200 rounded-lg bg-gray-50">
+            <label class="block text-xl font-semibold text-psico-azul mb-4">2. Como você avalia seu nível de Ansiedade/Estresse hoje?</label>
+            <div class="flex justify-between text-center">
+                {% for i in range(1, 6) %}
+                <label class="flex flex-col items-center cursor-pointer">
+                    <input type="radio" name="ansiedade" value="{{ i }}" required class="hidden peer">
+                    <div class="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-full text-lg font-bold text-gray-600 peer-checked:bg-psico-verde peer-checked:border-psico-verde peer-checked:text-white transition duration-200 hover:bg-psico-verde/20">
+                        {{ i }}
+                    </div>
+                    <span class="text-sm mt-1 text-gray-500">
+                        {% if i == 1 %}Calmo{% elif i == 3 %}Médio{% elif i == 5 %}Alto{% endif %}
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+            <p class="text-sm text-gray-400 mt-2 text-center">1 (Baixo) a 5 (Alto)</p>
+        </div>
+
+        <div class="p-5 border border-gray-200 rounded-lg bg-gray-50">
+            <label class="block text-xl font-semibold text-psico-azul mb-4">3. Como você avalia seu nível de Tristeza/Falta de Interesse?</label>
+            <div class="flex justify-between text-center">
+                {% for i in range(1, 6) %}
+                <label class="flex flex-col items-center cursor-pointer">
+                    <input type="radio" name="depressao" value="{{ i }}" required class="hidden peer">
+                    <div class="w-12 h-12 flex items-center justify-center border-2 border-gray-300 rounded-full text-lg font-bold text-gray-600 peer-checked:bg-psico-azul peer-checked:border-psico-azul peer-checked:text-white transition duration-200 hover:bg-psico-azul/20">
+                        {{ i }}
+                    </div>
+                    <span class="text-sm mt-1 text-gray-500">
+                        {% if i == 1 %}Raro{% elif i == 3 %}Médio{% elif i == 5 %}Constante{% endif %}
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+            <p class="text-sm text-gray-400 mt-2 text-center">1 (Raro) a 5 (Constante)</p>
+        </div>
+
+        <div class="p-5 border border-gray-200 rounded-lg bg-gray-50">
+            <label for="genero" class="block text-xl font-semibold text-psico-azul mb-3">4. Qual seu gênero de preferência para o profissional?</label>
+            <div class="flex space-x-4">
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="genero" value="F" required class="text-psico-verde focus:ring-psico-verde">
+                    <span class="text-gray-700">Feminino (Mulher)</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="genero" value="M" required class="text-psico-verde focus:ring-psico-verde">
+                    <span class="text-gray-700">Masculino (Homem)</span>
+                </label>
+                <label class="flex items-center space-x-2">
+                    <input type="radio" name="genero" value="Indiferente" checked class="text-psico-verde focus:ring-psico-verde">
+                    <span class="text-gray-700">Indiferente</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="text-center pt-4">
+            <button type="submit" class="w-full bg-psico-verde text-white font-bold py-4 px-8 rounded-full text-xl shadow-lg hover:bg-psico-azul transition duration-300 transform hover:scale-[1.01]">
+                Ver Recomendações de Psicólogos
+            </button>
+            <p class="text-sm text-gray-500 mt-3">Suas respostas são confidenciais e usadas apenas para recomendação.</p>
+        </div>
+    </form>
+</section>
+{% endblock %}

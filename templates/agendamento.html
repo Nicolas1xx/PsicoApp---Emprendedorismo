@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block content %}
+{# Configuração de Variáveis de Preço #}
+{% set valor_base = psicologo.valorSessao | default(150.00) %}
+{% set valor_casal = (valor_base * 1.5) | round(2) %}
+{% set valor_pacote = (valor_base * 3.5) | round(2) %}
+
+<section class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <header class="text-center mb-16">
+        <h1 class="text-5xl font-extrabold text-gray-900 mb-3 tracking-tight">Agende sua Consulta com {{ psicologo.nome }}</h1>
+        <p class="text-xl text-gray-600">Escolha o tipo, a duração e o horário em apenas 3 passos simples.</p>
+    </header>
+
+    <form id="agendamento-form" method="POST" action="{{ url_for('pagamento_redirect', psicologo_doc_id=psicologo.id) }}" class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        
+        {# --- Sidebar com Informações do Psicólogo --- #}
+        <aside class="lg:col-span-1 bg-white p-8 rounded-2xl shadow-xl space-y-6 h-fit sticky top-24 border-t-8 border-psico-azul/70">
+            <div class="flex flex-col items-center text-center">
+                <img src="{{ psicologo.avatar or url_for('static', filename='img/default_avatar.jpg') }}" 
+                     alt="Avatar de {{ psicologo.nome }}" class="w-24 h-24 rounded-full object-cover border-4 border-psico-verde mb-4 shadow-lg">
+                <h2 class="text-3xl font-bold text-gray-800">{{ psicologo.nome }}</h2>
+                <p class="text-lg font-semibold text-psico-azul mt-1">Sessão a partir de R$ {{ valor_base | int }},00</p>
+                <p class="text-sm text-gray-500 mt-3">{{ psicologo.descricaoCurta | default('Profissional qualificado focado em proporcionar o melhor suporte psicológico online.') }}</p>
+            </div>
+        </aside>
+
+        {# --- Conteúdo Principal com as Etapas de Agendamento --- #}
+        <div class="lg:col-span-2 space-y-10">
+            
+            {# 1. Tipo de Sessão (Seleção Única: name="sessaoTipo") #}
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-6"><span class="text-psico-verde">1.</span> Escolha o Tipo de Sessão</h3>
+                
+                <div class="options-group space-y-4">
+                    
+                    <input type="radio" id="tipo_individual" name="sessaoTipo" value="Sessão Individual" required class="hidden peer/tipo_individual">
+                    <label for="tipo_individual" class="block cursor-pointer p-5 rounded-xl border-2 border-gray-200 peer-checked/tipo_individual:border-psico-azul peer-checked/tipo_individual:bg-blue-50 transition duration-200 hover:shadow-md">
+                        <span class="font-extrabold text-gray-800">Sessão Individual</span>
+                        <span class="block text-sm text-gray-500 mt-0.5">Foco em você. Valor base: R$ {{ valor_base | int }},00</span>
+                    </label>
+                    
+                    <input type="radio" id="tipo_casal" name="sessaoTipo" value="Terapia de Casal" class="hidden peer/tipo_casal">
+                    <label for="tipo_casal" class="block cursor-pointer p-5 rounded-xl border-2 border-gray-200 peer-checked/tipo_casal:border-psico-azul peer-checked/tipo_casal:bg-blue-50 transition duration-200 hover:shadow-md">
+                        <span class="font-extrabold text-gray-800">Terapia de Casal</span>
+                        <span class="block text-sm text-gray-500 mt-0.5">Para dois. Valor: R$ {{ valor_casal | round(0) | int }},00</span>
+                    </label>
+                    
+                    <input type="radio" id="tipo_pacote" name="sessaoTipo" value="Pacote (4 sessões)" class="hidden peer/tipo_pacote">
+                    <label for="tipo_pacote" class="block cursor-pointer p-5 rounded-xl border-2 border-gray-200 peer-checked/tipo_pacote:border-psico-verde peer-checked/tipo_pacote:bg-green-50 transition duration-200 hover:shadow-md">
+                        <span class="font-extrabold text-psico-verde">Pacote 4 Sessões (Economize!)</span>
+                        <span class="block text-sm text-gray-500 font-bold mt-0.5">R$ {{ valor_pacote | round(0) | int }},00</span>
+                    </label>
+                </div>
+            </div>
+
+            {# 2. Duração da Sessão (Seleção Única: name="duracao") #}
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-6"><span class="text-psico-verde">2.</span> Escolha a Duração da Sessão</h3>
+                <div class="flex space-x-4">
+                    
+                    <input type="radio" id="duracao_50" name="duracao" value="50 min" required class="hidden peer/duracao_50">
+                    <label for="duracao_50" class="flex-1 text-center py-3 px-4 rounded-full border border-gray-300 peer-checked/duracao_50:bg-psico-azul peer-checked/duracao_50:text-white peer-checked/duracao_50:border-psico-azul cursor-pointer transition duration-150 font-semibold hover:bg-blue-50">
+                        50 minutos
+                    </label>
+                    
+                    <input type="radio" id="duracao_80" name="duracao" value="80 min" class="hidden peer/duracao_80">
+                    <label for="duracao_80" class="flex-1 text-center py-3 px-4 rounded-full border border-gray-300 peer-checked/duracao_80:bg-psico-azul peer-checked/duracao_80:text-white peer-checked/duracao_80:border-psico-azul cursor-pointer transition duration-150 font-semibold hover:bg-blue-50">
+                        80 minutos
+                    </label>
+                </div>
+            </div>
+
+            {# 3. Data e Horário de Início (CORRIGIDO JINJA2 e PEER) #}
+            <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+                <h3 class="text-2xl font-bold text-gray-800 border-b pb-4 mb-6"><span class="text-psico-verde">3.</span> Selecione a Data e Horário de Início</h3>
+                <p class="text-base text-gray-600 mb-6">Selecione o dia e o horário de início da consulta. Horários em **Brasília (BRT)**.</p>
+
+                {% for dia_en, horarios_list in horarios.items() %}
+                    <div class="dia-disponivel border-b pb-4 mb-4 last:border-b-0">
+                        <h4 class="text-xl font-bold text-psico-azul mb-3">{{ dia_en | translate_day }}</h4>
+                        <div class="horarios-grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                            {% for horario in horarios_list %}
+                                {# GERAÇÃO DE ID CORRIGIDA: Não usa loop.parent #}
+                                {% set unique_id_safe = (dia_en ~ '_' ~ loop.index0) | replace(' ', '_') | replace(':', '') | replace('-', '_') | lower %}
+                                
+                                <input type="radio" 
+                                    id="horario_{{ unique_id_safe }}" 
+                                    name="dataHoraSessao"
+                                    value="{{ dia_en | translate_day }} às {{ horario }}" 
+                                    class="hidden peer" {# Usa 'peer' simples para funcionar com Tailwind #}
+                                    required>
+                                
+                                <label for="horario_{{ unique_id_safe }}" 
+                                    class="text-center py-3 px-2 rounded-lg border border-gray-300 text-gray-700 hover:border-psico-verde 
+                                            peer-checked:bg-psico-verde peer-checked:text-white peer-checked:border-psico-verde 
+                                            font-medium cursor-pointer transition duration-200 shadow-sm hover:shadow-lg">
+                                    <span class="sr-only">Horário em {{ dia_en | translate_day }}: </span>
+                                    {{ horario }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Botão de Pagamento #}
+            <div class="pt-6">
+                <button type="submit" 
+                        id="btn-pagamento"
+                        disabled 
+                        class="bg-gray-400 text-white font-bold py-5 px-8 rounded-full shadow-xl transition duration-300 w-full text-xl cursor-not-allowed transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-psico-azul/50">
+                    Selecione todos os 3 campos (Tipo, Duração e Horário) para Continuar
+                </button>
+                <p class="text-sm text-gray-500 text-center mt-3">Transação 100% segura. Você será redirecionado para a plataforma de pagamento.</p>
+            </div>
+            
+        </div>
+    </form>
+</section>
+
+{# --- Script JavaScript (Mantido) --- #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('agendamento-form');
+        
+        // Seleciona todos os inputs de rádio por seus nomes de grupo
+        const tipoInputs = form.querySelectorAll('input[name="sessaoTipo"]');
+        const duracaoInputs = form.querySelectorAll('input[name="duracao"]');
+        const horarioInputs = form.querySelectorAll('input[name="dataHoraSessao"]');
+        
+        const btnPagamento = document.getElementById('btn-pagamento');
+
+        // Função principal de verificação
+        function checkFormValidity() {
+            // Verifica se pelo menos um input está checado em cada grupo
+            const tipoSelecionado = Array.from(tipoInputs).some(input => input.checked);
+            const duracaoSelecionada = Array.from(duracaoInputs).some(input => input.checked);
+            const horarioSelecionado = Array.from(horarioInputs).some(input => input.checked);
+            
+            // Habilita o botão somente se todos os 3 forem TRUE
+            if (tipoSelecionado && duracaoSelecionada && horarioSelecionado) {
+                
+                // Habilita o botão e muda o estilo
+                btnPagamento.disabled = false;
+                btnPagamento.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                btnPagamento.classList.add('bg-psico-azul', 'hover:bg-psico-verde');
+                btnPagamento.textContent = 'Ir para Confirmação e Pagamento';
+            } else {
+                
+                // Desabilita o botão e reverte o estilo
+                btnPagamento.disabled = true;
+                btnPagamento.classList.remove('bg-psico-azul', 'hover:bg-psico-verde');
+                btnPagamento.classList.add('bg-gray-400', 'cursor-not-allowed');
+                btnPagamento.textContent = 'Selecione todos os 3 campos (Tipo, Duração e Horário) para Continuar';
+            }
+        }
+
+        // Adiciona listeners a cada input em todos os grupos
+        tipoInputs.forEach(input => input.addEventListener('change', checkFormValidity));
+        duracaoInputs.forEach(input => input.addEventListener('change', checkFormValidity));
+        horarioInputs.forEach(input => input.addEventListener('change', checkFormValidity));
+
+        // Checagem inicial
+        checkFormValidity();
+    });
+</script>
+
+{% endblock %}

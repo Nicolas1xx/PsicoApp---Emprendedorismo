@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Conteúdo Exclusivo | PsicoAPP{% endblock %}
+
+{% block content %}
+<section class="conteudo-restrito-section">
+    <div class="container">
+        <h1>Biblioteca de Autoajuda</h1>
+        <p class="lead-text">Material exclusivo para você continuar sua jornada de bem-estar fora da sessão.</p>
+
+        <div class="arquivos-grid">
+            {% for arquivo in arquivos %}
+                <div class="arquivo-card">
+                    <h3>{{ arquivo.nome }}</h3>
+                    <p>Material em PDF para leitura e exercícios práticos.</p>
+                    <a href="#" class="btn btn-primary btn-small">Baixar PDF</a>
+                </div>
+            {% endfor %}
+        </div>
+        
+    </div>
+</section>
+{% endblock %}

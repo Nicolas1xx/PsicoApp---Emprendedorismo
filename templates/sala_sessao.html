@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="sala-sessao-section container">
+    <h1 style="color: var(--cor-secundaria);">Sessão de Telepsicologia Online</h1>
+    <p class="lead-text">ID da Sessão: {{ session_id }} - Conectado com o(a) Dr(a). {{ session.psicologo_data.nome.split(' ')[0] if 'psicologo_data' in session else 'Profissional' }}</p>
+
+    <div class="video-container" style="margin-top: 30px;">
+        <iframe src="https://jitsi-meet.example.com/psicoapp-{{ session_id }}" 
+                title="Sala de Videochamada PsicoAPP" 
+                class="video-iframe"
+                allow="camera; microphone; display-capture">
+        </iframe>
+        
+        </div>
+    
+    <div class="text-center" style="margin-top: 30px;">
+        <p style="color: var(--cor-crise); font-weight: 600;">Em caso de problemas, utilize o chat de suporte no rodapé ou ligue para o suporte técnico.</p>
+    </div>
+</section>
+{% endblock %}

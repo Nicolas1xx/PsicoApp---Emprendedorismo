@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="confirmacao-section container text-center">
+    <h1 class="success-title"><i class="fas fa-check-circle" style="color: var(--cor-primaria); margin-right: 15px;"></i> Agendamento Confirmado!</h1>
+    <p class="lead-text">Seu pagamento foi processado com sucesso. Você receberá um e-mail com todos os detalhes.</p>
+    
+    <div class="card-detalhes">
+        <h3>Detalhes da Sua Sessão</h3>
+        
+        <p><strong>Profissional:</strong> {{ agendamento.psicologo_nome }}</p>
+        <p><strong>Data:</strong> {{ agendamento.dataHoraSessao }}</p>
+        <p><strong>Tipo:</strong> {{ agendamento.sessaoTipo }}</p>
+        <p><strong>Valor Pago:</strong> R$ {{ agendamento.valor | int }},00</p>
+        
+        <div class="divider"></div>
+        
+        <p class="importante-texto" style="font-weight: 700; color: var(--cor-secundaria);">
+            Link de Acesso (Guardar com Cuidado):
+        </p>
+        <p style="font-size: 1.1em; word-break: break-all;">
+            <a href="{{ url_for('sala_sessao', session_id=agendamento.linkSessao.split('/')[-1]) }}" target="_blank">{{ agendamento.linkSessao }}</a>
+        </p>
+
+    </div>
+    
+    <div class="text-center" style="margin-top: 30px;">
+        <a href="{{ url_for('index') }}" class="btn btn-login">Voltar para a Home</a>
+    </div>
+
+</section>
+{% endblock %}
