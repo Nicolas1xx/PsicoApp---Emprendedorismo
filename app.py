@@ -3,10 +3,11 @@ import random
 import uuid
 import logging
 import grpc
+import json
 
 logging.basicConfig(level=logging.WARNING)
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, json, render_template, request, redirect, url_for, session, flash
 # 🚨 NOVA IMPORTAÇÃO: werkzeug.utils para nomes de arquivo seguros
 from werkzeug.utils import secure_filename 
 import firebase_admin
@@ -26,7 +27,11 @@ app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui_para_sessao_flask_psicoapp' 
 
 # Caminho para o arquivo de credenciais (Mude o nome se o seu for diferente)
-CRED_PATH = 'firebase-admin-sdk.json'
+if not firebase_admin._apps:
+    cred_json = os.environ.get("FIREBASE_CREDENTIALS")
+    cred_dict = json.loads(cred_json)
+    cred = credentials.Certificate(cred_dict)
+    initialize_app(cred) # type: ignore
 
 # 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
 UPLOAD_FOLDER = 'static/img/avatares' 
@@ -42,12 +47,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 db = None
 try:
     # Use o nome correto do seu arquivo de credenciais
-    cred = credentials.Certificate(CRED_PATH) 
+    cred = credentials.Certificate(CRED_PATH)  # type: ignore
     firebase_admin.initialize_app(cred)
     db = firestore.client()
     print("Firebase inicializado com sucesso.")
 except FileNotFoundError:
-    print(f"ERRO: Arquivo de credenciais não encontrado em {CRED_PATH}. As rotas de DB não funcionarão.")
+    print(f"ERRO: Arquivo de credenciais não encontrado em {CRED_PATH}. As rotas de DB não funcionarão.") # type: ignore
 except Exception as e:
     print(f"Erro ao inicializar o Firebase: {e}")
 
