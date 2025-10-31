@@ -11,27 +11,78 @@ from flask import Flask, json, render_template, request, redirect, url_for, sess
 # 🚨 NOVA IMPORTAÇÃO: werkzeug.utils para nomes de arquivo seguros
 from werkzeug.utils import secure_filename 
 import firebase_admin
-from firebase_admin import credentials, firestore, auth, initialize_app
+from firebase_admin import credentials, firestore, auth
 from datetime import datetime, timedelta
 from functools import wraps 
 # Importação necessária para usar o filtro moderno no Firestore
 from google.cloud.firestore_v1.base_query import FieldFilter 
 
 # ==========================================================
-# 1. INICIALIZAÇÃO DO FLASK E FIREBASE
-# ==========================================================
-
 app = Flask(__name__)
 # Chave Secreta para Sessões do Flask (MUITO IMPORTANTE)
 # !!! TROQUE POR UMA CHAVE MAIS SEGURA NA PRODUÇÃO !!!
 app.secret_key = 'sua_chave_secreta_aqui_para_sessao_flask_psicoapp' 
 
 # Caminho para o arquivo de credenciais (Mude o nome se o seu for diferente)
+
+db = None # Inicializa o cliente do Firestore como None
+
+# 🚨 CORREÇÃO 1: Trata a variável de ambiente antes de tentar carregar JSON
 if not firebase_admin._apps:
     cred_json = os.environ.get("FIREBASE_CREDENTIALS")
-    cred_dict = json.loads(cred_json)
-    cred = credentials.Certificate(cred_dict)
-    initialize_app(cred)  # Inicializa o Firebase
+    
+    if cred_json: # Garante que a variável de ambiente não é None
+        try:
+            cred_dict = json.loads(cred_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred) # Inicializa com sucesso!
+            print("Firebase inicializado com credenciais de ambiente.")
+            db = firestore.client()
+        except Exception as e:
+            print(f"ERRO: Falha ao carregar credenciais JSON de ambiente: {e}")
+    else:
+        print("Aviso: Variável de ambiente FIREBASE_CREDENTIALS não encontrada.")
+
+
+# 🚨 CORREÇÃO 2: Remove a segunda tentativa de inicialização baseada em CRED_PATH
+# Se o Firebase já foi inicializado acima, não tente inicializar novamente.
+# Se a inicialização acima falhou, a segunda parte do código que usava CRED_PATH
+# era redundante ou usava uma variável não definida.
+# Mantemos apenas a verificação de que 'db' foi configurado.
+
+if not db:
+    print("Aviso: O cliente Firestore (db) não foi inicializado. As rotas de DB não funcionarão.")
+
+# FIM CORREÇÕES
+
+# 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
+# ... (O restante do bloco de configuração de upload continua aqui)
+
+db = None # Inicializa o cliente do Firestore como None
+
+# 🚨 CORREÇÃO 1: Trata a variável de ambiente antes de tentar carregar JSON
+if not firebase_admin._apps:
+    cred_json = os.environ.get("FIREBASE_CREDENTIALS")
+    
+    if cred_json: # Garante que a variável de ambiente não é None
+        try:
+            cred_dict = json.loads(cred_json)
+            cred = credentials.Certificate(cred_dict)
+            firebase_admin.initialize_app(cred)
+            print("Firebase inicializado com credenciais de ambiente.")
+            db = firestore.client()
+        except Exception as e:
+            print(f"ERRO: Falha ao carregar credenciais JSON de ambiente: {e}")
+    else:
+        print("Aviso: Variável de ambiente FIREBASE_CREDENTIALS não encontrada.")
+
+# 🚨 CORREÇÃO 2: Remove a segunda tentativa de inicialização com CRED_PATH não definida.
+if not db:
+    print("Aviso: O cliente Firestore (db) não foi inicializado. As rotas de DB não funcionarão.")
+    
+# FIM CORREÇÃO 2
+
+# ... (O restante do bloco de configuração de upload continua aqui)
 
 # 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
 UPLOAD_FOLDER = 'static/img/avatares' 
