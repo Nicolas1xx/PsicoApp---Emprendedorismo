@@ -25,6 +25,41 @@ app = Flask(__name__)
 # !!! TROQUE POR UMA CHAVE MAIS SEGURA NA PRODUÇÃO !!!
 app.secret_key = 'sua_chave_secreta_aqui_para_sessao_flask_psicoapp' 
 
+# Variável de ambiente configurada no Render
+FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON')
+
+if FIREBASE_CREDENTIALS_JSON:
+    # Opção 1: Credenciais de ambiente (para Produção/Render)
+    try:
+        # 1. Carrega o JSON da variável de ambiente como um dicionário Python
+        cred_dict = json.loads(FIREBASE_CREDENTIALS_JSON)
+        cred = credentials.Certificate(cred_dict)
+        firebase_app = firebase_admin.initialize_app(cred)
+        print("✅ Firebase inicializado com sucesso via Variável de Ambiente.")
+    except Exception as e:
+        print(f"❌ ERRO CRÍTICO ao parsear ou inicializar Firebase via Variável de Ambiente: {e}")
+        # Lançar o erro para que o Gunicorn/Render falhe e avise
+        raise
+else:
+    # Opção 2: Credenciais do arquivo local (para Desenvolvimento)
+    CRED_PATH = 'firebase-admin-sdk.json'
+    if os.path.exists(CRED_PATH):
+        try:
+            cred = credentials.Certificate(CRED_PATH)
+            firebase_app = firebase_admin.initialize_app(cred)
+            print("⏳ Firebase inicializado com sucesso via Arquivo Local.")
+        except Exception as e:
+            print(f"❌ ERRO CRÍTICO ao inicializar Firebase via Arquivo Local: {e}")
+            raise
+    else:
+        # Se nenhuma credencial for encontrada (nem ambiente, nem arquivo local)
+        print("❌ ERRO CRÍTICO: Credenciais Firebase não encontradas. O aplicativo não pode se conectar ao DB.")
+        raise Exception("Credenciais Firebase ausentes. Configure FIREBASE_CREDENTIALS_JSON no Render ou adicione o arquivo localmente.")
+
+
+db = firestore.client()
+# ... (restante das suas inicializações de DB e Storage)
+
 # Caminho para o arquivo de credenciais (Mude o nome se o seu for diferente)
 CRED_PATH = 'firebase-admin-sdk.json'
 
