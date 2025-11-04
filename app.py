@@ -23,47 +23,51 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 app = Flask(__name__)
 # Chave Secreta para Sessões do Flask (MUITO IMPORTANTE)
 # !!! TROQUE POR UMA CHAVE MAIS SEGURA NA PRODUÇÃO !!!
-app.secret_key = 'sua_chave_secreta_aqui_para_sessao_flask_psicoapp' 
-
-# Variável de ambiente configurada no Render
-FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON')
-
-if FIREBASE_CREDENTIALS_JSON:
-    # Opção 1: Credenciais de ambiente (para Produção/Render)
-    try:
-        # 1. Carrega o JSON da variável de ambiente como um dicionário Python
-        cred_dict = json.loads(FIREBASE_CREDENTIALS_JSON)
-        cred = credentials.Certificate(cred_dict)
-        firebase_app = firebase_admin.initialize_app(cred)
-        print("✅ Firebase inicializado com sucesso via Variável de Ambiente.")
-    except Exception as e:
-        print(f"❌ ERRO CRÍTICO ao parsear ou inicializar Firebase via Variável de Ambiente: {e}")
-        # Lançar o erro para que o Gunicorn/Render falhe e avise
-        raise
-else:
-    # Opção 2: Credenciais do arquivo local (para Desenvolvimento)
-    CRED_PATH = 'firebase-admin-sdk.json'
-    if os.path.exists(CRED_PATH):
+# 1. Verifica se o aplicativo Firebase Padrão já existe
+if not firebase_admin._apps:
+    FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON')
+    
+    if FIREBASE_CREDENTIALS_JSON:
+        # Opção A: Credenciais de ambiente (para Produção/Render)
         try:
-            cred = credentials.Certificate(CRED_PATH)
+            # Carrega o JSON da variável de ambiente como um dicionário
+            cred_dict = json.loads(FIREBASE_CREDENTIALS_JSON)
+            cred = credentials.Certificate(cred_dict)
             firebase_app = firebase_admin.initialize_app(cred)
-            print("⏳ Firebase inicializado com sucesso via Arquivo Local.")
+            print("✅ Firebase inicializado com sucesso via Variável de Ambiente.")
         except Exception as e:
-            print(f"❌ ERRO CRÍTICO ao inicializar Firebase via Arquivo Local: {e}")
+            print(f"❌ ERRO CRÍTICO ao inicializar Firebase via Variável de Ambiente: {e}")
             raise
     else:
-        # Se nenhuma credencial for encontrada (nem ambiente, nem arquivo local)
-        print("❌ ERRO CRÍTICO: Credenciais Firebase não encontradas. O aplicativo não pode se conectar ao DB.")
-        raise Exception("Credenciais Firebase ausentes. Configure FIREBASE_CREDENTIALS_JSON no Render ou adicione o arquivo localmente.")
+        # Opção B: Credenciais do arquivo local (para Desenvolvimento)
+        CRED_PATH = 'firebase-admin-sdk.json'
+        if os.path.exists(CRED_PATH):
+            try:
+                cred = credentials.Certificate(CRED_PATH)
+                firebase_app = firebase_admin.initialize_app(cred)
+                print("⏳ Firebase inicializado com sucesso via Arquivo Local.")
+            except Exception as e:
+                print(f"❌ ERRO CRÍTICO ao inicializar Firebase via Arquivo Local: {e}")
+                raise
+        else:
+            # Nenhuma credencial encontrada
+            print("❌ ERRO CRÍTICO: Credenciais Firebase não encontradas.")
+            raise Exception("Credenciais Firebase ausentes. Configure a variável de ambiente.")
+else:
+    # Se já existir (caso o Gunicorn tenha feito a inicialização), usa a instância existente.
+    firebase_app = firebase_admin.get_app()
+    print("⚠️ Firebase já estava inicializado. Usando a instância existente.")
 
-
+# Configuração da conexão com o banco de dados
 db = firestore.client()
-# ... (restante das suas inicializações de DB e Storage)
 
-# Caminho para o arquivo de credenciais (Mude o nome se o seu for diferente)
-CRED_PATH = 'firebase-admin-sdk.json'
+# ==========================================================
+# 2. CONFIGURAÇÃO DE UPLOAD
+# ==========================================================
 
-# 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
+# Caminho para o arquivo de credenciais (mantido apenas para referência de dev)
+CRED_PATH = 'firebase-admin-sdk.json' 
+
 UPLOAD_FOLDER = 'static/img/avatares' 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -73,27 +77,6 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 # FIM CONFIGURAÇÃO DE UPLOAD
 
-# Inicializa o Firebase
-db = None
-try:
-    # 1. Tenta carregar as credenciais do ambiente (Render)
-    if os.environ.get('FIREBASE_CREDENTIALS_JSON'):
-        cred_json = json.loads(os.environ.get('FIREBASE_CREDENTIALS_JSON'))
-        cred = credentials.Certificate(cred_json)
-    
-    # 2. Tenta carregar do arquivo local (para desenvolvimento)
-    elif os.path.exists('firebase-admin-sdk.json'):
-        cred = credentials.Certificate('firebase-admin-sdk.json')
-    
-    else:
-        # Se não encontrar credenciais, inicializa sem elas (pode falhar)
-        # OU loga um erro para debug
-        print("⚠️ Credenciais Firebase não encontradas no ambiente ou localmente.")
-        raise Exception("Credenciais Firebase ausentes.")
-
-    firebase_app = firebase_admin.initialize_app(cred)
-except Exception as e:
-    print(f"Erro ao inicializar Firebase: {e}")
     # Decida se o app deve parar aqui ou continuar com funcionalidade limitada
     # Se parar, é útil para o deploy falhar e avisar você.
     # firebase_app = None # Descomente se o app puder rodar sem Firebase
