@@ -1,1 +1,8 @@
 firebase-admin-sdk.json
+static/img/avatares/
+venv/
+.env
+
+# Você pode adicionar também:
+__pycache__/
+*.pyc

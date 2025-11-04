@@ -2,12 +2,11 @@ import os
 import random
 import uuid
 import logging
-from dotenv import load_dotenv
 import grpc
 
 logging.basicConfig(level=logging.WARNING)
 
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, json, render_template, request, redirect, url_for, session, flash
 # 🚨 NOVA IMPORTAÇÃO: werkzeug.utils para nomes de arquivo seguros
 from werkzeug.utils import secure_filename 
 import firebase_admin
@@ -16,9 +15,6 @@ from datetime import datetime, timedelta
 from functools import wraps 
 # Importação necessária para usar o filtro moderno no Firestore
 from google.cloud.firestore_v1.base_query import FieldFilter 
-load_dotenv()
-
-private_key = os.getenv("PRIVATE_KEY").replace("\\n", "\n")
 
 # ==========================================================
 # 1. INICIALIZAÇÃO DO FLASK E FIREBASE
@@ -45,15 +41,27 @@ if not os.path.exists(UPLOAD_FOLDER):
 # Inicializa o Firebase
 db = None
 try:
-    # Use o nome correto do seu arquivo de credenciais
-    cred = credentials.Certificate(CRED_PATH) 
-    firebase_admin.initialize_app(cred)
-    db = firestore.client()
-    print("Firebase inicializado com sucesso.")
-except FileNotFoundError:
-    print(f"ERRO: Arquivo de credenciais não encontrado em {CRED_PATH}. As rotas de DB não funcionarão.")
+    # 1. Tenta carregar as credenciais do ambiente (Render)
+    if os.environ.get('FIREBASE_CREDENTIALS_JSON'):
+        cred_json = json.loads(os.environ.get('FIREBASE_CREDENTIALS_JSON'))
+        cred = credentials.Certificate(cred_json)
+    
+    # 2. Tenta carregar do arquivo local (para desenvolvimento)
+    elif os.path.exists('firebase-admin-sdk.json'):
+        cred = credentials.Certificate('firebase-admin-sdk.json')
+    
+    else:
+        # Se não encontrar credenciais, inicializa sem elas (pode falhar)
+        # OU loga um erro para debug
+        print("⚠️ Credenciais Firebase não encontradas no ambiente ou localmente.")
+        raise Exception("Credenciais Firebase ausentes.")
+
+    firebase_app = firebase_admin.initialize_app(cred)
 except Exception as e:
-    print(f"Erro ao inicializar o Firebase: {e}")
+    print(f"Erro ao inicializar Firebase: {e}")
+    # Decida se o app deve parar aqui ou continuar com funcionalidade limitada
+    # Se parar, é útil para o deploy falhar e avisar você.
+    # firebase_app = None # Descomente se o app puder rodar sem Firebase
 
 # ==========================================================
 # 2. CONFIGURAÇÃO DE ADMIN (FIXO NO CÓDIGO)
@@ -1104,7 +1112,8 @@ def sala_sessao(session_id):
 # 9. INICIALIZAÇÃO DO SERVIDOR
 # ==========================================================
 
+# Este bloco é apenas para desenvolvimento local.
+# O Gunicorn (em produção) e o Render ignorarão este bloco.
 if __name__ == '__main__':
-    # Certifique-se de que a variável de ambiente FLASK_ENV=development está configurada
-    # ou use: app.run(debug=True)
-    app.run(debug=True)
+    print("Iniciando Flask em modo de desenvolvimento...")
+    app.run(host='0.0.0.0', debug=True)
