@@ -898,11 +898,26 @@ def confirmar_agendamento(doc_id):
 
 @app.route('/')
 def index():
-    # USA A FUNÇÃO CORRIGIDA PARA OBTER OS DADOS DO FIREBASE
-    psicologos = get_all_psicologos() 
+    psicologos_com_url = [] # Define uma lista vazia como fallback
     
-    psicologos_com_url = process_psicologos_for_template(psicologos)
+    try:
+        # Tenta obter os dados do Firebase (onde pode falhar se a conexão for interrompida)
+        psicologos = get_all_psicologos() 
+        
+        # Só processa se houver dados
+        if psicologos:
+            psicologos_com_url = process_psicologos_for_template(psicologos)
+            
+    except Exception as e:
+        # Registra o erro detalhado no log do Render
+        app.logger.error(f"Erro CRÍTICO ao carregar psicólogos na rota '/': {e}")
+        # Opcionalmente, pode-se carregar dados de mock aqui se o DB falhar
+        # psicologos_com_url = MOCK_PSICOLOGOS 
+        flash("Não foi possível carregar a lista de psicólogos. Tente novamente mais tarde.", 'error')
+
+
     return render_template('index.html', page_title='Home', psicologos=psicologos_com_url)
+
 
 @app.route('/triagem', methods=['GET', 'POST'])
 def triagem():
