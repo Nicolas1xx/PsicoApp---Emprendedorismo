@@ -2,6 +2,7 @@ import os
 import random
 import uuid
 import logging
+from dotenv import load_dotenv
 import grpc
 
 logging.basicConfig(level=logging.WARNING)
@@ -15,6 +16,9 @@ from datetime import datetime, timedelta
 from functools import wraps 
 # Importação necessária para usar o filtro moderno no Firestore
 from google.cloud.firestore_v1.base_query import FieldFilter 
+load_dotenv()
+
+private_key = os.getenv("PRIVATE_KEY").replace("\\n", "\n")
 
 # ==========================================================
 # 1. INICIALIZAÇÃO DO FLASK E FIREBASE
