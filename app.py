@@ -3,11 +3,10 @@ import random
 import uuid
 import logging
 import grpc
-import json
 
 logging.basicConfig(level=logging.WARNING)
 
-from flask import Flask, json, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 # 🚨 NOVA IMPORTAÇÃO: werkzeug.utils para nomes de arquivo seguros
 from werkzeug.utils import secure_filename 
 import firebase_admin
@@ -18,71 +17,16 @@ from functools import wraps
 from google.cloud.firestore_v1.base_query import FieldFilter 
 
 # ==========================================================
+# 1. INICIALIZAÇÃO DO FLASK E FIREBASE
+# ==========================================================
+
 app = Flask(__name__)
 # Chave Secreta para Sessões do Flask (MUITO IMPORTANTE)
 # !!! TROQUE POR UMA CHAVE MAIS SEGURA NA PRODUÇÃO !!!
 app.secret_key = 'sua_chave_secreta_aqui_para_sessao_flask_psicoapp' 
 
 # Caminho para o arquivo de credenciais (Mude o nome se o seu for diferente)
-
-db = None # Inicializa o cliente do Firestore como None
-
-# 🚨 CORREÇÃO 1: Trata a variável de ambiente antes de tentar carregar JSON
-if not firebase_admin._apps:
-    cred_json = os.environ.get("FIREBASE_CREDENTIALS")
-    
-    if cred_json: # Garante que a variável de ambiente não é None
-        try:
-            cred_dict = json.loads(cred_json)
-            cred = credentials.Certificate(cred_dict)
-            firebase_admin.initialize_app(cred) # Inicializa com sucesso!
-            print("Firebase inicializado com credenciais de ambiente.")
-            db = firestore.client()
-        except Exception as e:
-            print(f"ERRO: Falha ao carregar credenciais JSON de ambiente: {e}")
-    else:
-        print("Aviso: Variável de ambiente FIREBASE_CREDENTIALS não encontrada.")
-
-
-# 🚨 CORREÇÃO 2: Remove a segunda tentativa de inicialização baseada em CRED_PATH
-# Se o Firebase já foi inicializado acima, não tente inicializar novamente.
-# Se a inicialização acima falhou, a segunda parte do código que usava CRED_PATH
-# era redundante ou usava uma variável não definida.
-# Mantemos apenas a verificação de que 'db' foi configurado.
-
-if not db:
-    print("Aviso: O cliente Firestore (db) não foi inicializado. As rotas de DB não funcionarão.")
-
-# FIM CORREÇÕES
-
-# 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
-# ... (O restante do bloco de configuração de upload continua aqui)
-
-db = None # Inicializa o cliente do Firestore como None
-
-# 🚨 CORREÇÃO 1: Trata a variável de ambiente antes de tentar carregar JSON
-if not firebase_admin._apps:
-    cred_json = os.environ.get("FIREBASE_CREDENTIALS")
-    
-    if cred_json: # Garante que a variável de ambiente não é None
-        try:
-            cred_dict = json.loads(cred_json)
-            cred = credentials.Certificate(cred_dict)
-            firebase_admin.initialize_app(cred)
-            print("Firebase inicializado com credenciais de ambiente.")
-            db = firestore.client()
-        except Exception as e:
-            print(f"ERRO: Falha ao carregar credenciais JSON de ambiente: {e}")
-    else:
-        print("Aviso: Variável de ambiente FIREBASE_CREDENTIALS não encontrada.")
-
-# 🚨 CORREÇÃO 2: Remove a segunda tentativa de inicialização com CRED_PATH não definida.
-if not db:
-    print("Aviso: O cliente Firestore (db) não foi inicializado. As rotas de DB não funcionarão.")
-    
-# FIM CORREÇÃO 2
-
-# ... (O restante do bloco de configuração de upload continua aqui)
+CRED_PATH = 'firebase-admin-sdk.json'
 
 # 🚨 CONFIGURAÇÃO DE UPLOAD ADICIONADA
 UPLOAD_FOLDER = 'static/img/avatares' 
@@ -98,12 +42,12 @@ if not os.path.exists(UPLOAD_FOLDER):
 db = None
 try:
     # Use o nome correto do seu arquivo de credenciais
-    cred = credentials.Certificate(CRED_PATH)  # type: ignore
+    cred = credentials.Certificate(CRED_PATH) 
     firebase_admin.initialize_app(cred)
     db = firestore.client()
     print("Firebase inicializado com sucesso.")
 except FileNotFoundError:
-    print(f"ERRO: Arquivo de credenciais não encontrado em {CRED_PATH}. As rotas de DB não funcionarão.") # type: ignore
+    print(f"ERRO: Arquivo de credenciais não encontrado em {CRED_PATH}. As rotas de DB não funcionarão.")
 except Exception as e:
     print(f"Erro ao inicializar o Firebase: {e}")
 
