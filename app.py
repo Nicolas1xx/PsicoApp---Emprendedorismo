@@ -11,7 +11,7 @@ from flask import Flask, json, render_template, request, redirect, url_for, sess
 from werkzeug.utils import secure_filename 
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
-from datetime import datetime, timedelta
+from datetime importf datetime, timedelta
 from functools import wraps 
 # Importação necessária para usar o filtro moderno no Firestore
 from google.cloud.firestore_v1.base_query import FieldFilter 
@@ -709,7 +709,6 @@ def cadastro_psicologo():
             
     return render_template('admin/cadastro_psicologo.html', page_title='Admin | Novo Psicólogo')
 
-# ROTA DE EDIÇÃO (Corrigida)
 @app.route('/admin/psicologo/<psicologo_uid>/editar', methods=['GET', 'POST'])
 @admin_required
 def editar_psicologo(psicologo_uid):
@@ -796,7 +795,6 @@ def editar_psicologo(psicologo_uid):
         return render_template('admin/editar_psicologo.html', 
                                 page_title='Admin | Editar Profissional',
                                 psicologo=psicologo)
-
 # ROTA DE EXCLUSÃO (Corrigida)
 @app.route('/admin/psicologo/<psicologo_uid>/excluir', methods=['POST'])
 @admin_required
