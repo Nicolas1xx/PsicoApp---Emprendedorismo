@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="max-w-4xl mx-auto bg-white p-10 rounded-2xl shadow-2xl border-t-8 border-psico-verde">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6 border-b pb-3">
+        📝 Editar Dados do Psicólogo
+    </h1>
+    {# Assume-se que o objeto 'psicologo' está disponível no contexto do template #}
+    <p class="text-gray-600 mb-8">Edite os dados do profissional **{{ psicologo.nome }}**. Deixe o campo de senha vazio para mantê-la.</p>
+
+    {# 🚨 Manter enctype="multipart/form-data" para upload de foto #}
+    <form method="POST" action="{{ url_for('editar_psicologo', id=psicologo.id) }}" class="space-y-6" enctype="multipart/form-data">
+        
+        <div class="grid grid-cols-2 gap-6 p-4 border rounded-lg bg-gray-50">
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email (Login)</label>
+                {# Preenchido com o valor atual #}
+                <input type="email" id="email" name="email" required value="{{ psicologo.email }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+            </div>
+            <div>
+                <label for="senha" class="block text-sm font-medium text-gray-700">Nova Senha (Opcional)</label>
+                {# Deixar o campo de senha vazio para não ser obrigatório na edição #}
+                <input type="password" id="senha" name="nova_senha" placeholder="Deixe em branco para não alterar" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="nome" class="block text-sm font-medium text-gray-700">Nome Completo</label>
+                {# Preenchido com o valor atual #}
+                <input type="text" id="nome" name="nome" required value="{{ psicologo.nome }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+            </div>
+            <div>
+                <label for="genero" class="block text-sm font-medium text-gray-700">Gênero</label>
+                <select id="genero" name="genero" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+                    {# Usar 'selected' para manter a opção atual #}
+                    <option value="F" {% if psicologo.genero == 'F' %}selected{% endif %}>Feminino</option>
+                    <option value="M" {% if psicologo.genero == 'M' %}selected{% endif %}>Masculino</option>
+                </select>
+            </div>
+        </div>
+        
+        {# Campo de upload de foto #}
+        <div>
+            <label for="foto_perfil" class="block text-sm font-medium text-gray-700">Foto de Perfil (Opcional)</label>
+            <input type="file" id="foto_perfil" name="foto_perfil" accept="image/png, image/jpeg" class="mt-1 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-psico-verde file:text-white
+                hover:file:bg-psico-azul">
+            <p class="mt-2 text-xs text-gray-500">Apenas JPG ou PNG são permitidos. A foto atual será mantida se nenhuma for enviada.</p>
+            {# Opcional: Mostrar a foto atual se existir #}
+            {% if psicologo.foto_url %}
+            <div class="mt-4">
+                <p class="text-sm font-medium text-gray-700 mb-1">Foto Atual:</p>
+                <img src="{{ psicologo.foto_url }}" alt="Foto de Perfil Atual" class="w-20 h-20 rounded-full object-cover border-2 border-psico-verde">
+            </div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="valorSessao" class="block text-sm font-medium text-gray-700">Valor Padrão da Sessão (R$)</label>
+            {# Preenchido com o valor atual #}
+            <input type="number" id="valorSessao" name="valorSessao" step="0.01" required value="{{ psicologo.valorSessao }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+        </div>
+        
+        <div>
+            <label for="tags" class="block text-sm font-medium text-gray-700">Especialidades/Tags (separadas por vírgula)</label>
+            {# Preenchido com o valor atual #}
+            <input type="text" id="tags" name="tags" placeholder="Ex: TCC, Ansiedade, Casal" required value="{{ psicologo.tags }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">
+        </div>
+
+        <div>
+            <label for="descricaoCurta" class="block text-sm font-medium text-gray-700">Descrição Curta/Bio</label>
+            {# Preenchido com o valor atual #}
+            <textarea id="descricaoCurta" name="descricaoCurta" rows="3" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 focus:ring-psico-verde focus:border-psico-verde">{{ psicologo.descricaoCurta }}</textarea>
+        </div>
+
+        <div class="pt-4 border-t mt-6">
+            <button type="submit" class="w-full py-3 px-6 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-psico-azul hover:bg-psico-verde focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-psico-verde transition duration-150">
+                💾 Salvar Alterações
+            </button>
+        </div>
+    </form>
+</section>
+{% endblock %}
