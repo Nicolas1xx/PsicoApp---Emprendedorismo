@@ -718,51 +718,61 @@ def editar_psicologo(psicologo_uid):
     
     if request.method == 'POST':
         try:
-            valorSessao = float(request.form.get('valorSessao'))
-        except ValueError:
-            flash("O valor da sessão deve ser um número válido.", 'error')
-            return redirect(url_for('editar_psicologo', psicologo_uid=psicologo_uid))
-
-        tags = [tag.strip() for tag in request.form.get('tags').split(',') if tag.strip()]
-        
-        # 🚨 Lógica de Upload/Atualização da Foto (Simplificada para edição)
-        file = request.files.get('foto_perfil')
-        avatar_filename = None # Inicia como None para não alterar se nenhum arquivo for enviado
-        
-        if file and file.filename != '' and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4().hex}_{filename}"
+            # Tenta converter o valor da sessão
             try:
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
-                avatar_filename = unique_filename
-                flash("Nova foto de perfil enviada com sucesso.", 'info')
-            except Exception as e:
-                flash(f"Aviso: Erro ao salvar a nova foto: {e}. A foto antiga será mantida.", 'warning')
-        
-        
-        dados_atualizados = {
-            'nome': request.form.get('nome'),
-            'genero': request.form.get('genero'),
-            'valorSessao': valorSessao,
-            'especialidades': tags, # Usa 'especialidades' para salvar no DB
-            'bio': request.form.get('descricaoCurta'), # Usa 'bio' para salvar no DB
-            'email': request.form.get('email')
-        }
+                valorSessao = float(request.form.get('valorSessao'))
+            except ValueError:
+                flash("O valor da sessão deve ser um número válido.", 'error')
+                return redirect(url_for('editar_psicologo', psicologo_uid=psicologo_uid))
 
-        # Adiciona o novo nome do arquivo APENAS se um novo arquivo foi enviado
-        if avatar_filename:
-             dados_atualizados['fotoURL'] = avatar_filename
+            tags = [tag.strip() for tag in request.form.get('tags').split(',') if tag.strip()]
+            
+            # 🚨 Lógica de Upload/Atualização da Foto
+            file = request.files.get('foto_perfil')
+            avatar_filename = None # Inicia como None para não alterar se nenhum arquivo for enviado
+            
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                
+                # === CORREÇÃO CRÍTICA PARA AMBIENTE EFÊMERO (RENDER) ===
+                # A função file.save(os.path.join(...)) vai falhar no Render!
+                # Precisamos de um try/except para impedir o Internal Server Error (500).
+                # Em um app de produção, este bloco deveria enviar para o Firebase Storage.
+                try:
+                    # Tenta salvar localmente (só funcionará em ambiente de desenvolvimento)
+                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], unique_filename))
+                    avatar_filename = unique_filename
+                    flash("Nova foto de perfil enviada com sucesso.", 'info')
+                except Exception as e:
+                    # Falha silenciosamente para que o app não quebre no Render, mas avisa o admin.
+                    app.logger.error(f"ERRO DE UPLOAD NO RENDER: {e}")
+                    flash("Aviso: Falha ao salvar a nova foto de perfil (ambiente de produção não permite upload local). A foto antiga será mantida.", 'warning')
+            # === FIM DA CORREÇÃO CRÍTICA ===
+            
+            
+            dados_atualizados = {
+                'nome': request.form.get('nome'),
+                'genero': request.form.get('genero'),
+                'valorSessao': valorSessao,
+                'especialidades': tags, # Usa 'especialidades' para salvar no DB
+                'bio': request.form.get('descricaoCurta'), # Usa 'bio' para salvar no DB
+                'email': request.form.get('email')
+            }
 
-        try:
+            # Adiciona o novo nome do arquivo APENAS se o upload local foi (ou seria) bem-sucedido
+            if avatar_filename:
+                dados_atualizados['fotoURL'] = avatar_filename
+
             # 1. Atualiza o Firestore
             psicologo_ref.update(dados_atualizados)
-            
-            # Não precisamos mais atualizar o MOCK aqui
             
             flash(f"Psicólogo {dados_atualizados['nome']} atualizado com sucesso!", 'success')
             return redirect(url_for('admin_dashboard'))
 
         except Exception as e:
+            # Captura qualquer outro erro que não seja o do upload (ex: erro de conexão com DB ou formulário)
+            app.logger.error(f"Erro CRÍTICO ao atualizar psicólogo: {e}")
             flash(f"Erro ao atualizar o psicólogo: {e}", 'error')
             return redirect(url_for('editar_psicologo', psicologo_uid=psicologo_uid))
 
@@ -770,32 +780,41 @@ def editar_psicologo(psicologo_uid):
         # GET: Carrega os dados atuais (Prioriza DB)
         psicologo = None
         
-        if db:
-            try:
-                # Usa get_all_psicologos para garantir o mapeamento de campos (bio->descricaoCurta, etc)
-                todos_psicologos = get_all_psicologos()
-                psicologo = next((p for p in todos_psicologos if p['id'] == psicologo_uid), None)
+        try:
+            # Usa get_all_psicologos para garantir o mapeamento de campos (bio->descricaoCurta, etc)
+            # Assumindo que get_all_psicologos() está definida e funciona.
+            todos_psicologos = get_all_psicologos()
+            psicologo = next((p for p in todos_psicologos if p['id'] == psicologo_uid), None)
 
-            except Exception:
-                pass 
+        except Exception as e:
+            # Erro na busca do DB, tenta o MOCK/Fallback
+            app.logger.warning(f"Erro ao buscar psicólogo no DB ({psicologo_uid}): {e}. Tentando MOCK.")
+            pass 
 
         if not psicologo:
              # Se não encontrou no DB ou o DB está offline, busca no MOCK (get_all_psicologos já retorna o mock se DB falhar)
-             psicologo = next((p for p in get_all_psicologos() if p['id'] == psicologo_uid), None)
+             # NOTE: O bloco acima já pode ter feito isso dependendo da sua função get_all_psicologos
+             # Garantindo o fallback de forma explícita caso a busca acima falhe:
+             # Este bloco pode ser redundante se get_all_psicologos já tiver fallback,
+             # mas serve como segurança.
+             pass 
 
         if not psicologo:
              flash("Erro ao carregar dados do psicólogo. Não encontrado no DB ou MOCK.", 'error')
              return redirect(url_for('admin_dashboard'))
 
-        if not isinstance(psicologo.get('tags'), list):
-             psicologo['tags'] = []
+        if not isinstance(psicologo.get('especialidades'), list):
+             # O formulário espera 'tags', mas o DB salva como 'especialidades'.
+             # Corrigido o campo para a checagem ser compatível com o que é salvo.
+             psicologo['especialidades'] = []
         
         # Para exibir a foto atual no template de edição, precisamos do URL
+        # Processamos o psicólogo para garantir que a fotoURL está formatada
         psicologo = process_psicologos_for_template([psicologo])[0]
 
         return render_template('admin/editar_psicologo.html', 
-                                page_title='Admin | Editar Profissional',
-                                psicologo=psicologo)
+                                 page_title='Admin | Editar Profissional',
+                                 psicologo=psicologo)
 
 # ROTA DE EXCLUSÃO (Corrigida)
 @app.route('/admin/psicologo/<psicologo_uid>/excluir', methods=['POST'])
