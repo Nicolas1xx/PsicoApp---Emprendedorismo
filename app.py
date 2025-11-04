@@ -22,6 +22,12 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 
 app = Flask(__name__)
 # Chave Secreta para Sessões do Flask (MUITO IMPORTANTE)
+# Chave Secreta para Sessões do Flask (MUITO IMPORTANTE)
+# Deve ser lida de uma variável de ambiente em produção.
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_fallback_for_dev_only')
+# Se FLASK_SECRET_KEY não for encontrada em produção, o app deve falhar por segurança.
+if app.secret_key == 'default_fallback_for_dev_only' and os.environ.get('RENDER') == 'true':
+    raise Exception("ERRO CRÍTICO: FLASK_SECRET_KEY não configurada no Render!")
 # !!! TROQUE POR UMA CHAVE MAIS SEGURA NA PRODUÇÃO !!!
 # 1. Verifica se o aplicativo Firebase Padrão já existe
 if not firebase_admin._apps:
